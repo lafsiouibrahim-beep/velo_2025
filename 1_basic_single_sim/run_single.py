@@ -7,41 +7,46 @@ from model import State, run_simulation
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(description="Single bike-share simulation")
-    ap.add_argument("--steps", type=int, required=True)
-    ap.add_argument("--p1", type=float, required=True, help="Prob mailly->moulin")
-    ap.add_argument("--p2", type=float, required=True, help="Prob moulin->mailly")
-    ap.add_argument("--init-mailly", type=int, required=True)
-    ap.add_argument("--init-moulin", type=int, required=True)
-    ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--out-csv", type=Path, required=True)
-    ap.add_argument("--plot", action="store_true")
-    return ap.parse_args()
+    """Parse command line arguments for single simulation run.
+    
+    Returns:
+        Parsed arguments containing:
+        - steps: Number of simulation steps
+        - p1: Probability of movement from Mailly to Moulin
+        - p2: Probability of movement from Moulin to Mailly
+        - init_mailly: Initial bikes at Mailly station
+        - init_moulin: Initial bikes at Moulin station
+        - seed: Random seed (default: 0)
+        - out_csv: Output CSV file path
+        - plot: Boolean flag to generate plots
+    
+    Note:
+        Use argparse.ArgumentParser to define all required and optional arguments
+    """
+    # TODO: Implement argument parsing
+    pass
 
 
 def main():
-    args = parse_args()
-    df, metrics = run_simulation(
-        State(args.init_mailly, args.init_moulin),
-        args.steps,
-        args.p1,
-        args.p2,
-        args.seed,
-    )
-    args.out_csv.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(args.out_csv, index=False)
-    with open(args.out_csv.with_suffix(".metrics.csv"), "w") as f:
-        f.write("\n".join(f"{k}\t{v}" for k, v in metrics.items()))
-    if args.plot:
-        plt.figure(figsize=(8, 4))
-        plt.plot(df["time"], df["mailly"], label="mailly")
-        plt.plot(df["time"], df["moulin"], label="moulin")
-        plt.xlabel("time")
-        plt.ylabel("bikes")
-        plt.title("Bike counts over time")
-        plt.legend()
-        plt.tight_layout()
-        plt.savefig("mailly.png", dpi=150)
+    """Main function to run a single bike-sharing simulation.
+    
+    This function should:
+    1. Parse command line arguments
+    2. Run the simulation with specified parameters
+    3. Save results to CSV files (timeseries and metrics)
+    4. Optionally generate and save plots
+    
+    Output files:
+    - Timeseries data: CSV with time, mailly, moulin columns
+    - Metrics data: CSV with key-value pairs of simulation metrics
+    - Optional plot: PNG showing bike counts over time for both stations
+    
+    Note:
+        Create output directories if they don't exist
+        Save metrics as tab-separated key-value pairs
+    """
+    # TODO: Implement main simulation workflow
+    pass
 
 
 if __name__ == "__main__":

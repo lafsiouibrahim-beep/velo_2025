@@ -6,6 +6,12 @@ import pandas as pd
 
 @dataclass
 class State:
+    """Represents the state of bikes at two stations.
+    
+    Attributes:
+        mailly: Number of bikes at Mailly station
+        moulin: Number of bikes at Moulin station
+    """
     mailly: int
     moulin: int
 
@@ -17,39 +23,49 @@ def step(
     rng: np.random.Generator,
     metrics: Dict[str, int],
 ) -> State:
+    """Simulate one time step of the bike-sharing system.
+    
+    Args:
+        state: Current state of the system (bike counts at each station)
+        p1: Probability of a user wanting to go from Mailly to Moulin
+        p2: Probability of a user wanting to go from Moulin to Mailly
+        rng: Random number generator for stochastic events
+        metrics: Dictionary to track simulation metrics (unmet demand, etc.)
+    
+    Returns:
+        Updated state after one simulation step
+        
+    Note:
+        - If a station has no bikes available, increment the appropriate unmet demand counter
+        - Update the state by moving bikes between stations based on probabilities
+    """
     # User tries to go from mailly -> moulin with prob p1
-    if rng.random() < p1:
-        if state.mailly > 0:
-            state.mailly -= 1
-            state.moulin += 1
-        else:
-            metrics["unmet_mailly"] += 1
-    # User tries to go from moulin -> mailly with prob p2
-    if rng.random() < p2:
-        if state.moulin > 0:
-            state.moulin -= 1
-            state.mailly += 1
-        else:
-            metrics["unmet_moulin"] += 1
-    return state
+    pass
 
 
 def run_simulation(
     initial: State, steps: int, p1: float, p2: float, seed: int
 ) -> Tuple[pd.DataFrame, Dict[str, int]]:
-    rng = np.random.default_rng(seed)
-    state = State(initial.mailly, initial.moulin)
-    times = [0]
-    mailly = [state.mailly]
-    moulin = [state.moulin]
-    metrics = {"unmet_mailly": 0, "unmet_moulin": 0}
-
-    for t in range(1, steps + 1):
-        state = step(state, p1, p2, rng, metrics)
-        times.append(t)
-        mailly.append(state.mailly)
-        moulin.append(state.moulin)
-
-    df = pd.DataFrame({"time": times, "mailly": mailly, "moulin": moulin})
-    metrics["final_imbalance"] = state.mailly - state.moulin
-    return df, metrics
+    """Run a complete bike-sharing simulation.
+    
+    Args:
+        initial: Initial state of the system
+        steps: Number of simulation steps to run
+        p1: Probability of movement from Mailly to Moulin
+        p2: Probability of movement from Moulin to Mailly
+        seed: Random seed for reproducibility
+    
+    Returns:
+        Tuple containing:
+        - DataFrame with columns ['time', 'mailly', 'moulin'] tracking bike counts over time
+        - Dictionary with metrics including:
+            - 'unmet_mailly': Number of unmet requests at Mailly
+            - 'unmet_moulin': Number of unmet requests at Moulin
+            - 'final_imbalance': Final difference between station bike counts
+    
+    Note:
+        - Initialize metrics dictionary with appropriate counters
+        - Record state at each time step for the DataFrame
+        - Calculate final imbalance as mailly - moulin
+    """
+    pass

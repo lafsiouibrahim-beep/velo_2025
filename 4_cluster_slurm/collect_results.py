@@ -6,86 +6,51 @@ import matplotlib.pyplot as plt
 
 
 def parse_args():
-    ap = argparse.ArgumentParser(
-        description="Collect per-run outputs into aggregated CSVs"
-    )
-    ap.add_argument("--in-dir", type=Path, required=True)
-    ap.add_argument("--out-dir", type=Path, required=True)
-    ap.add_argument(
-        "--plot", action="store_true", help="Plot the results after collection"
-    )
-    return ap.parse_args()
+    """Parse command line arguments for collecting distributed results.
+    
+    Returns:
+        Parsed arguments containing:
+        - in_dir: Input directory containing subdirectories with individual run results
+        - out_dir: Output directory for aggregated results
+        - plot: Boolean flag to generate plots after collection
+    
+    Note:
+        Use argparse.ArgumentParser to define all required and optional arguments
+    """
+    # TODO: Implement argument parsing
+    pass
 
 
 def main():
-    args = parse_args()
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-
-    metrics_rows = []
-    ts_rows = []
-
-    for sub in sorted(p for p in args.in_dir.iterdir() if p.is_dir()):
-        rid = int(sub.name)
-        # metrics
-        mpath = sub / "metrics.csv"
-        if mpath.exists():
-            m = pd.read_csv(mpath).iloc[0].to_dict()
-            m["run_id"] = rid
-            # add metadata if present
-            meta_path = sub / "metadata.json"
-            if meta_path.exists():
-                with open(meta_path) as f:
-                    meta = json.load(f)
-                m.update({f"param_{k}": v for k, v in meta.items()})
-            metrics_rows.append(m)
-        # timeseries
-        tpath = sub / "timeseries.csv"
-        if tpath.exists():
-            df = pd.read_csv(tpath)
-            df.insert(0, "run_id", rid)
-            ts_rows.append(
-                df.melt(
-                    id_vars=["run_id", "time"], var_name="station", value_name="count"
-                )
-            )
-
-    if metrics_rows:
-        pd.DataFrame(metrics_rows).to_csv(args.out_dir / "metrics.csv", index=False)
-    if ts_rows:
-        ts_df = pd.concat(ts_rows, ignore_index=True)
-        ts_df.to_csv(args.out_dir / "timeseries.csv", index=False)
-        if args.plot:
-            # Plotting timeseries (example: line plot for each station)
-            for station_name in ts_df["station"].unique():
-                plt.figure(figsize=(12, 7))
-                station_data = ts_df[ts_df["station"] == station_name]
-                for run_id in pd.unique(station_data["run_id"]):
-                    run_data = station_data[station_data["run_id"] == run_id]
-                    plt.plot(run_data["time"], run_data["count"], label=f"Run {run_id}")
-                plt.title(f"Timeseries for Station: {station_name}")
-                plt.xlabel("Time")
-                plt.ylabel("Count")
-                plt.legend()
-                plt.grid(True)
-                plt.tight_layout()
-                plt.savefig(args.out_dir / f"timeseries_{station_name}.png")
-                plt.close()
-
-    if args.plot:
-        if metrics_rows:
-            metrics_df = pd.DataFrame(metrics_rows)
-            # Plotting metrics (example: bar plot for each metric)
-            for col in metrics_df.columns.drop(
-                ["run_id"] + [c for c in metrics_df.columns if c.startswith("param_")]
-            ):
-                plt.figure(figsize=(10, 6))
-                metrics_df.set_index("run_id")[col].plot(kind="bar")
-                plt.title(f"Metric: {col} per run")
-                plt.xlabel("Run ID")
-                plt.ylabel(col)
-                plt.tight_layout()
-                plt.savefig(args.out_dir / f"metric_{col}.png")
-                plt.close()
+    """Main function to collect and aggregate results from distributed simulations.
+    
+    This function should:
+    1. Parse command line arguments
+    2. Scan input directory for numbered subdirectories (one per simulation run)
+    3. Read individual results from each subdirectory
+    4. Aggregate metrics and timeseries data
+    5. Save aggregated results to CSV files
+    6. Optionally generate plots
+    
+    Expected input structure:
+    - {in_dir}/0/metrics.csv, timeseries.csv, metadata.json
+    - {in_dir}/1/metrics.csv, timeseries.csv, metadata.json
+    - ...
+    
+    Output files:
+    - metrics.csv: Aggregated metrics for all runs with run_id column
+    - timeseries.csv: Tidy format timeseries data for all runs
+    - Optional plots: PNG files for timeseries and metrics visualization
+    
+    Note:
+        - Extract run_id from subdirectory name (should be integer)
+        - Merge metadata parameters into metrics with 'param_' prefix
+        - Convert timeseries to tidy format (melt operation)
+        - Handle missing files gracefully
+        - Sort subdirectories numerically for consistent processing
+    """
+    # TODO: Implement results collection and aggregation workflow
+    pass
 
 
 if __name__ == "__main__":
