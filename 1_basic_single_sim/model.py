@@ -42,8 +42,35 @@ def step(
         - If a station has no bikes available, increment the appropriate unmet demand counter
         - Update the state by moving bikes between stations based on probabilities
     """
+    new_state = State(
+        mailly=state.mailly,
+        moulin=state.moulin,
+        unmet_mailly=state.unmet_mailly,
+        unmet_moulin=state.unmet_moulin,
+    )
+
+    # Mailly vers Moulin
+    if rng.random() < p1:
+        if new_state.mailly > 0:
+            new_state.mailly -= 1
+            new_state.moulin += 1
+        else:
+            metrics["unmet_mailly"] += 1
+            new_state.unmet_mailly += 1
+
+    # Moulin vers Mailly
+    if rng.random() < p2:
+        if new_state.moulin > 0:
+            new_state.moulin -= 1
+            new_state.mailly += 1
+        else:
+            metrics["unmet_moulin"] += 1
+            new_state.unmet_moulin += 1
+
+    return new_state
     # User tries to go from mailly -> moulin with prob p1
-    pass
+    #pass
+    
 
 
 def run_simulation(
@@ -80,4 +107,47 @@ def run_simulation(
         - Record state at each time step for the DataFrame
         - Calculate final imbalance as mailly - moulin
     """
-    pass
+    #  Initialiser le générateur aléatoire
+    rng = np.random.default_rng(seed)
+
+    #  État initial du système
+    state = State(
+        mailly=initial_mailly,
+        moulin=initial_moulin
+    )
+
+    metrics = {
+        "unmet_mailly": 0,
+        "unmet_moulin": 0,
+    }
+
+    #  Historique des états (pour le tableau final)
+    history = []
+
+    # Enregistrer l'état initial (temps = 0)
+    history.append({
+        "time": 0,
+        "mailly": state.mailly,
+        "moulin": state.moulin,
+    })
+
+    #  Boucle de simulation
+    for t in range(1, steps + 1):
+        state = step(state, p1, p2, rng, metrics)
+        
+        history.append({
+            "time": t,
+            "mailly": state.mailly,
+            "moulin": state.moulin,
+        })
+
+    # Créer le DataFrame final
+    df = pd.DataFrame(history)
+
+    metrics["final_mailly"] = state.mailly
+    metrics["final_moulin"] = state.moulin
+    metrics["final_imbalance"] = state.mailly - state.moulin
+    metrics["total_bikes"] = state.mailly + state.moulin
+
+    return df, metrics
+
