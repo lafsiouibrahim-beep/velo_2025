@@ -2,6 +2,8 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib # Importez le module matplotlib complet
+matplotlib.use('Agg') # ✅ Correct ! Appelé sur le module de base.
 import matplotlib.pyplot as plt
 from model import State, run_simulation
 
