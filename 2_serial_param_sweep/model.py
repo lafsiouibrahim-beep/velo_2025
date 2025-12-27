@@ -45,7 +45,26 @@ def step(
         - Update the state by moving bikes between stations based on probabilities
     """
     # TODO: Implement the step logic
-    pass
+    
+    # Mailly vers Moulin
+    if rng.random() < p1:
+        if state.mailly > 0:
+            state.mailly -= 1
+            state.moulin += 1
+        else:
+            state.unmet_mailly += 1
+            metrics["unmet_mailly"] += 1
+
+    # Moulin vers Mailly
+    if rng.random() < p2:
+        if state.moulin > 0:
+            state.moulin -= 1
+            state.mailly += 1
+        else:
+            state.unmet_moulin += 1
+            metrics["unmet_moulin"] += 1
+
+    return state
 
 
 def run_simulation(
@@ -81,4 +100,39 @@ def run_simulation(
         - Calculate final_imbalance for each step as mailly - moulin
     """
     # TODO: Implement the simulation loop
-    pass
+
+
+    rng = np.random.default_rng(seed)
+
+    state = State(
+        mailly=initial_mailly,
+        moulin=initial_moulin,
+    )
+
+    # Les métriques globales
+    metrics = {
+        "unmet_mailly": 0,
+        "unmet_moulin": 0,
+    }
+
+    # Historique de la simulation (valeurs à chaque pas de temps)
+    history = {
+        "step": [],
+        "mailly": [],
+        "moulin": [],
+        "unmet_mailly": [],
+        "unmet_moulin": [],
+        "final_imbalance": [],
+    }
+
+    for t in range(steps):
+        state = step(state, p1, p2, rng, metrics)
+
+        history["step"].append(t)
+        history["mailly"].append(state.mailly)
+        history["moulin"].append(state.moulin)
+        history["unmet_mailly"].append(state.unmet_mailly)
+        history["unmet_moulin"].append(state.unmet_moulin)
+        history["final_imbalance"].append(state.mailly - state.moulin)
+
+    return history
