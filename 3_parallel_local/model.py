@@ -42,8 +42,25 @@ def step(
         - Update the state by moving bikes between stations based on probabilities
         - If a station has no bikes available, increment the appropriate unmet demand counter
     """
-    # TODO: Implement the step logic including unmet tracking
-    pass
+    # Mailly vers Moulin
+    if rng.random() < p1:
+        if state.mailly > 0:
+            state.mailly -= 1
+            state.moulin += 1
+        else:
+            state.unmet_mailly += 1
+            metrics["unmet_mailly"] += 1
+
+    # Moulin vers Mailly
+    if rng.random() < p2:
+        if state.moulin > 0:
+            state.moulin -= 1
+            state.mailly += 1
+        else:
+            state.unmet_moulin += 1
+            metrics["unmet_moulin"] += 1
+
+    return state
 
 
 def run_simulation(
@@ -77,5 +94,37 @@ def run_simulation(
         - Record state at each time step for the DataFrame
         - Calculate final imbalance as mailly - moulin
     """
-    # TODO: Implement the simulation loop with extended metrics
-    pass
+    # initialiser rng
+    rng = np.random.default_rng(seed)
+
+    # l'état initiale
+    state = State(mailly=initial_mailly, moulin=initial_moulin)
+
+    # Metrics dictionary
+    metrics = {"unmet_mailly": 0, "unmet_moulin": 0}
+
+    #listes pour enregistrer chaque étape
+    history = {
+        "mailly": [],
+        "moulin": [],
+        "unmet_mailly": [],
+        "unmet_moulin": [],
+        "final_imbalance": []
+    }
+
+    # Simulation loop
+    for _ in range(steps):
+        state = step(state, p1, p2, rng, metrics)
+
+        # Enregistrer les mesures
+        history["mailly"].append(state.mailly)
+        history["moulin"].append(state.moulin)
+        history["unmet_mailly"].append(state.unmet_mailly)
+        history["unmet_moulin"].append(state.unmet_moulin)
+        history["final_imbalance"].append(0)
+
+    # calculer le déséquilibre final
+    final_diff = state.mailly - state.moulin
+    history["final_imbalance"] = [final_diff] * steps
+
+    return history
