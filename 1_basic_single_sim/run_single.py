@@ -24,7 +24,39 @@ def parse_args():
         Use argparse.ArgumentParser to define all required and optional arguments
     """
     # TODO: Implement argument parsing
-    pass
+
+    
+    parser = argparse.ArgumentParser(
+        description="Run a bike-sharing simulation between Mailly and Moulin."
+    )
+
+    parser.add_argument("--steps", type=int, required=True,
+                        help="Number of simulation steps")
+
+    parser.add_argument("--p1", type=float, required=True,
+                        help="Probability of movement from Mailly to Moulin")
+
+    parser.add_argument("--p2", type=float, required=True,
+                        help="Probability of movement from Moulin to Mailly")
+
+    parser.add_argument("--init-mailly", type=int, required=True,
+                        help="Initial number of bikes at Mailly station")
+
+    parser.add_argument("--init-moulin", type=int, required=True,
+                        help="Initial number of bikes at Moulin station")
+
+    parser.add_argument("--seed", type=int, default=0,
+                        help="Random seed (default: 0)")
+
+    parser.add_argument("--out-csv", type=str, required=True,
+                        help="Output CSV file for time series")
+
+    parser.add_argument("--plot", action="store_true",
+                        help="Generate and save plot")
+
+    return parser.parse_args()
+
+    
 
 
 def main():
@@ -46,7 +78,47 @@ def main():
         Save metrics as tab-separated key-value pairs
     """
     # TODO: Implement main simulation workflow
-    pass
+
+    
+    #  Lire les arguments
+    args = parse_args()
+
+    # Lancer la simulation
+    df, metrics = run_simulation(
+        initial_mailly=args.init_mailly,
+        initial_moulin=args.init_moulin,
+        steps=args.steps,
+        p1=args.p1,
+        p2=args.p2,
+        seed=args.seed,
+    )
+
+    
+    out_csv_path = Path(args.out_csv)
+    out_csv_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Sauvegarder les séries temporelles
+    df.to_csv(out_csv_path, index=False)
+
+    # Sauvegarder les métriques
+    metrics_path = out_csv_path.with_suffix(".metrics.tsv")
+    with open(metrics_path, "w") as f:
+        for key, value in metrics.items():
+            f.write(f"{key}\t{value}\n")
+
+    # Générer le graphique si demandé
+    if args.plot:
+        plt.figure()
+        plt.plot(df["time"], df["mailly"], label="Mailly")
+        plt.plot(df["time"], df["moulin"], label="Moulin")
+        plt.xlabel("Time")
+        plt.ylabel("Number of bikes")
+        plt.legend()
+        plt.grid(True)
+
+        plot_path = out_csv_path.with_suffix(".png")
+        plt.savefig(plot_path)
+        plt.close()
 
 
 if __name__ == "__main__":
