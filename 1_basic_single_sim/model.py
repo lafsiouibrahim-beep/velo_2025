@@ -42,6 +42,8 @@ def step(
         - If a station has no bikes available, increment the appropriate unmet demand counter
         - Update the state by moving bikes between stations based on probabilities
     """
+    # cche -- Pas besoin de créer un nouveau objet State. Vous avez passé un objet 'state' que vous
+    # pouvez changer directement. De cette façon, vous dupliqués la memoire utilisé.
     new_state = State(
         mailly=state.mailly,
         moulin=state.moulin,
@@ -116,6 +118,8 @@ def run_simulation(
         moulin=initial_moulin
     )
 
+    # cche -- Ces données sont dans l'objet State, vous pouvez le manipuler directement
+    # dans l'objet state.
     metrics = {
         "unmet_mailly": 0,
         "unmet_moulin": 0,
@@ -132,11 +136,12 @@ def run_simulation(
     })
 
     #  Boucle de simulation
-    for t in range(1, steps + 1):
+    # cche -- C'est plus pythonic si vous ajoutez 1 a time.
+    for t in range(steps):
         state = step(state, p1, p2, rng, metrics)
         
         history.append({
-            "time": t,
+            "time": t + 1,
             "mailly": state.mailly,
             "moulin": state.moulin,
         })
