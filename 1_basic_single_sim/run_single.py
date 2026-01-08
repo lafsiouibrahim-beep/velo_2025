@@ -86,6 +86,8 @@ def main():
     args = parse_args()
 
     # Lancer la simulation
+    # cche -- Il faut importer pandas dans ce fichier parce que vous utilisez des dataframe ici.
+    # Il ne faut pas s'appuyer sur l'importation dans model.
     df, metrics = run_simulation(
         initial_mailly=args.init_mailly,
         initial_moulin=args.init_moulin,
